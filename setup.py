@@ -3,7 +3,7 @@ from pathlib import Path
 
 here = Path(__file__).resolve().parent
 README = (here / "README.md").read_text(encoding="utf-8")
-VERSION = (here / "VERSION").read_text(encoding="utf-8").strip()
+VERSION = (here / 'joltml' / "VERSION").read_text(encoding="utf-8").strip()
 
 setup(
     name='joltml',
@@ -21,10 +21,13 @@ setup(
     author='Sherif Abdulkader Tawfik Abbas',
     author_email='sherif.tawfic@gmail.com',
     url='https://github.com/sheriftawfikabbas/joltml',
-    keywords=['ai', 'machine learning',
-              'model testing'],
+    keywords=['ai', 'machine learning', 'machine learning workflow'
+              'model tracking'],
     install_requires=['xgboost',
                       'pandas',
-                      'numpy'],
+                      'numpy',
+                      'torch',
+                      'tensorflow',
+                      'sklearn'],
 
 )
