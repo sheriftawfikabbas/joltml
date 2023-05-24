@@ -3,7 +3,9 @@ import json
 import uuid
 from datetime import datetime
 from joltml.fit import Fit
-
+from typing import List, Union
+from numpy.typing import ArrayLike
+import pandas as pd
 
 class Experiment:
     '''
@@ -55,7 +57,7 @@ class Experiment:
             # Read the experiment data
             pass
 
-        lab_book_f = open(path + '/jolt_lab/' + 
+        lab_book_f = open(path + '/jolt_lab/' +
                           self.experiment_id + '/lab_book.json', 'w')
         json.dump(self.lab_book, lab_book_f)
         lab_book_f.close()
@@ -72,21 +74,23 @@ class Experiment:
             self.models += [model]
         return self
 
-    def _prepare_fit(self, splits, inputs, targets, scaler=None):
-        return Fit(self.experiment_id, self.dataset, splits, inputs, targets, path=self.path, scaler=scaler)
+    def _prepare_fit(self, splits, inputs: List[str] = None, target_names: Union[List[str], str] = None, targets: Union[ArrayLike, pd.DataFrame] = None, scaler=None):
+        return Fit(self.experiment_id, self.dataset, splits, inputs, target_names, targets, path=self.path, scaler=scaler)
 
-    def regression(self, splits=None, inputs=None, targets=None, metrics=None, scaler=None):
+    def regression(self, splits=None, inputs: List[str] = None, target_names: Union[List[str], str] = None, targets: Union[ArrayLike, pd.DataFrame] = None, metrics=None, scaler=None):
         # Starts a fitting run
-        fitting_run = self._prepare_fit(splits, inputs, targets, scaler)
+        fitting_run = self._prepare_fit(
+            splits, inputs, target_names, targets, scaler)
         for i in range(len(self.models)):
             fitting_run.regression(self.models[i], metrics)
             fitting_run.save_model(self.models[i])
             fitting_run.save_metrics(self.models[i])
         return self
 
-    def regression_optimize(self, splits=None, inputs=None, targets=None, metrics=None, scaler=None, params=None, n_trials=10, score=None):
+    def regression_optimize(self, splits=None, inputs: List[str] = None, target_names: Union[List[str], str] = None, targets: Union[ArrayLike, pd.DataFrame] = None, metrics=None, scaler=None, params=None, n_trials=10, score=None):
         # Starts a fitting run
-        fitting_run = self._prepare_fit(splits, inputs, targets, scaler)
+        fitting_run = self._prepare_fit(
+            splits, inputs, target_names, targets, scaler)
         for i in range(len(self.models)):
             fitting_run.regression_optimize(
                 self.models[i], metrics, params, n_trials, score)

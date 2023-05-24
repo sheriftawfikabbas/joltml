@@ -4,11 +4,14 @@ from datetime import datetime
 import os
 from joltml.joltmeter import RegressionMetrics, ClassificationMetrics
 from sklearn.model_selection import train_test_split
+from typing import List, Union
+from numpy.typing import ArrayLike
+import pandas as pd
 
 
 class Fit:
     def __init__(self, experiment_id, dataset, splits=0.2,
-                 inputs=None, targets=None, normalizer=None,
+                 inputs: List[str] = None, target_names: Union[List[str], str] = None, targets: Union[ArrayLike, pd.DataFrame] = None, normalizer=None,
                  path='./jolt_lab/',
                  fit_id=None,
                  utc_creation_time=None,
@@ -30,7 +33,7 @@ class Fit:
 
         self.normalizer = normalizer
 
-        self._set_axes(inputs, targets)
+        self._set_axes(inputs=inputs, targets=targets, target_names=target_names)
 
         self.splits = splits
         if self.X is not None and self.y is not None:
@@ -41,7 +44,8 @@ class Fit:
             elif isinstance(splits, float):
                 self.splits = splits
             else:
-                raise Exception("The 'splits' parameter should either be a list of 2-3 elements, or just a number.")
+                raise Exception(
+                    "The 'splits' parameter should either be a list of 2-3 elements, or just a number.")
             self._split_datasets()
 
         if scaler:
@@ -55,9 +59,9 @@ class Fit:
             'joltmeter': {}
         }
 
-        os.mkdir(self.path + '/jolt_lab/' + 
+        os.mkdir(self.path + '/jolt_lab/' +
                  self.experiment_id + '/' + self.fit_id)
-        os.mkdir(self.path + '/jolt_lab/' +  self.experiment_id +
+        os.mkdir(self.path + '/jolt_lab/' + self.experiment_id +
                  '/' + self.fit_id + '/models')
 
         self._write_fits_book()
@@ -66,15 +70,48 @@ class Fit:
         self.X_train, self.X_test, self.y_train, self.y_test = train_test_split(
             self.X, self.y, test_size=self.splits, random_state=42)
 
-    def _set_axes(self, inputs=None, targets=None):
-        self.y = self.dataset[targets]
-        if inputs is None:
-            inputs = []
-            for c in self.dataset.columns:
-                if c not in targets:
-                    inputs += [c]
-            self.X = self.dataset[inputs]
+    def _set_axes(self, inputs: List[str] = None, target_names: Union[List[str], str] = None, targets: Union[ArrayLike, pd.DataFrame] = None):
+        """
+        Parameters
+        ----------
+        inputs : List[str]
+            Column names to be used as input
+        targets : Union[str, List[str], pd.DataFrame]
+            Column names to be used as output, or a DataFrame of the output column
+        """
+        if target_names is not None and targets is not None:
+            raise Exception(
+                'Either targets or target_names should be specified, not both.')
+        if target_names is not None:
+            if isinstance(target_names, list):
+                if len(target_names) == 1:
+                    target_names = target_names[0]
+                else:
+                    raise Exception(
+                        'Currently supports only one target column.')
+
+            if isinstance(target_names, str) and target_names in self.dataset.columns:
+                self.y = self.dataset[target_names]
+            elif isinstance(target_names, str) and target_names not in self.dataset.columns:
+                raise Exception('No column named '+target_names+' in the dataset.')
+
+        elif isinstance(targets, pd.DataFrame):
+            self.y = targets.iloc[:, 0]
+        elif isinstance(targets, ArrayLike):
+            self.y = targets
         else:
+            raise Exception('Target column type not recognized.')
+
+        if inputs is None:
+            if target_names is not None:
+                inputs = []
+                for c in self.dataset.columns:
+                    if c != target_names:
+                        inputs += [c]
+                self.X = self.dataset[inputs]
+            elif targets is not None:
+                self.X = self.dataset
+        elif inputs is not None:
             self.X = self.dataset[inputs]
 
     def regression(self, model, metrics=None):
@@ -133,6 +170,6 @@ class Fit:
         self.scaler = scaler_class.fit(self.X_train)
         self.X_train = self.scaler.transform(self.X_train)
         self.X_test = self.scaler.transform(self.X_test)
-    
+
     def plot_loss(self):
         pass
