@@ -8,7 +8,7 @@ import pandas as pd
 import numpy as np
 import tqdm
 from captum.attr import IntegratedGradients
-
+from numpy.typing import ArrayLike
 
 class Pytorch(Model):
     def __init__(self, native_model=None,
@@ -34,16 +34,21 @@ class Pytorch(Model):
         self.loss_function = nn.MSELoss()
         self.optimizer = torch.optim.Adam(params=self.native_model.parameters(), lr=self.lr)
 
+    def _convert_type_from_numpy(self, z):
+        if isinstance(z, pd.DataFrame | pd.Series):
+            return torch.from_numpy(np.array(z.values,np.float32))
+        elif isinstance(z, ArrayLike):
+            return torch.from_numpy(z)
+        elif isinstance(z, list):
+            return torch.from_numpy(np.array(z.values,np.float32))
+        else:
+            raise Exception('Unsupported collection type.')
+        
     def fit(self, X, y, X_test, y_test):
-
-        if isinstance(X, pd.DataFrame):
-            X = torch.from_numpy(np.array(X.values,np.float32))
-        if isinstance(y, pd.DataFrame):
-            y = torch.from_numpy(np.array(y.values,np.float32))
-        if isinstance(X_test, pd.DataFrame):
-            X_test = torch.from_numpy(np.array(X_test.values,np.float32))
-        if isinstance(y_test, pd.DataFrame):
-            y_test = torch.from_numpy(np.array(y_test.values,np.float32))
+        X = self._convert_type_from_numpy(X)
+        y = self._convert_type_from_numpy(y)
+        X_test = self._convert_type_from_numpy(X_test)
+        y_test = self._convert_type_from_numpy(y_test)
 
         batch_start = torch.arange(0, len(X), self.batch_size)
         

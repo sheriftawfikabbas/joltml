@@ -7,26 +7,9 @@ from typing import List, Union
 from numpy.typing import ArrayLike
 import pandas as pd
 
+
 class Experiment:
     '''
-    from sklearn.datasets import fetch_california_housing
-    # Logging is done implicitly
-    dataset = fetch_california_housing(as_frame=True)["frame"]
-    dataset = dataset.dropna()
-    dataset = tf.random.shuffle(dataset)
-    training_set = dataset[:16000]
-    prediction_set = dataset[16000:,:-1]
-
-    experiment = Experiment(training_set)
-    experiment.add_models([Xgboost()])
-    experiment.regression_on('MedHouseVal')
-    experiment.fit(splits=[0.8,0.2])
-    # Write results and default evaluation metrics
-    y = experiment.predict(prediction_set)
-
-    # Of you can do this:
-    experiment = Experiment(training_set)
-    y = experiment.add_models([Xgboost()]).regression_on('MedHouseVal').fit(splits=[0.8,0.2]).predict(prediction_set)
     '''
 
     def __init__(self, dataset=None,
@@ -34,8 +17,7 @@ class Experiment:
                  experiment_id=None,
                  utc_creation_time=None,
                  utc_last_update_time=None,
-                 scaler=None,
-                 models=[]) -> None:
+                 models=None) -> None:
         self.path = path
         if not os.path.isdir(path + 'jolt_lab'):
             os.mkdir(path + 'jolt_lab')
@@ -44,7 +26,12 @@ class Experiment:
         else:
             self.experiment_id = experiment_id
         self.dataset = dataset
-        self.models = models
+        if models is None:
+            self.models = []
+        else:
+            self.models = models
+            
+        print('Models:', self.models)
         self.utc_creation_time = str(utc_creation_time or datetime.utcnow())
         self.utc_last_update_time = utc_last_update_time
 
