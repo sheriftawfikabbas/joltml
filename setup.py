@@ -28,6 +28,8 @@ setup(
                       'numpy',
                       'torch',
                       'tensorflow',
-                      'sklearn'],
+                      'sklearn',
+                      'captum',
+                      'optuna'],
 
 )
