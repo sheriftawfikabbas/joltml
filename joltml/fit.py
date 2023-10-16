@@ -97,7 +97,7 @@ class Fit:
 
         elif isinstance(targets, pd.DataFrame):
             self.y = targets.iloc[:, 0]
-        elif isinstance(targets, ArrayLike):
+        elif isinstance(targets, list):
             self.y = targets
         else:
             raise Exception('Target column type not recognized.')
@@ -138,8 +138,10 @@ class Fit:
     def classification(self, model, metrics=None):
         model.classification_on()
         if metrics is None:
-            self.metrics = [ClassificationMetrics.f1_score,
-                            ClassificationMetrics.auc]
+            self.metrics = [
+                            # ClassificationMetrics.f1_score,
+                            ClassificationMetrics.auc
+                            ]
         else:
             self.metrics = metrics
         model.fit(self.X_train, self.y_train, self.X_test, self.y_test)

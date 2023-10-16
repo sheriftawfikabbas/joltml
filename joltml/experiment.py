@@ -73,6 +73,16 @@ class Experiment:
             fitting_run.save_model(self.models[i])
             fitting_run.save_metrics(self.models[i])
         return self
+    
+    def classification(self, splits=None, inputs: List[str] = None, target_names: Union[List[str], str] = None, targets: Union[ArrayLike, pd.DataFrame] = None, metrics=None, scaler=None):
+        # Starts a fitting run
+        fitting_run = self._prepare_fit(
+            splits, inputs, target_names, targets, scaler)
+        for i in range(len(self.models)):
+            fitting_run.classification(self.models[i], metrics)
+            fitting_run.save_model(self.models[i])
+            fitting_run.save_metrics(self.models[i])
+        return self
 
     def regression_optimize(self, splits=None, inputs: List[str] = None, target_names: Union[List[str], str] = None, targets: Union[ArrayLike, pd.DataFrame] = None, metrics=None, scaler=None, params=None, n_trials=10, score=None):
         # Starts a fitting run

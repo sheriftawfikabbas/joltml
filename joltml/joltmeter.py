@@ -35,4 +35,4 @@ class ClassificationMetrics:
     f1_score = JoltMeter(name="f1_score", greater_is_better=True,
                          function=f1_score)
     auc = JoltMeter(name="auc", greater_is_better=True,
-                    function=auc)
+                    function=roc_auc_score)

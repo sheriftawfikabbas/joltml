@@ -9,14 +9,15 @@ class Xgboost(Model):
     def __init__(self, native_model=None, joltml_version: str = ..., model_path='.', utc_time_created=None, model_id=None, **kwargs):
         super().__init__(native_model, joltml_version,
                          model_path, utc_time_created, model_id, **kwargs)
-
+        self.kwargs = kwargs
     def classification_on(self):
         super().classification_on()
-        self.native_model = xgboost.XGBClassifier()
+        self.native_model = xgboost.XGBClassifier(**self.kwargs)
 
     def regression_on(self):
         super().regression_on()
-        self.native_model = xgboost.XGBRegressor()
+        print('XGBoost parameters:',self.kwargs)
+        self.native_model = xgboost.XGBRegressor(**self.kwargs)
 
     def fit(self, X, y, X_test, y_test):
         super().fit(X, y, X_test, y_test)
