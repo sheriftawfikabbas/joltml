@@ -1,6 +1,10 @@
 ## Changelog
 
 
+### 0.1.1 - 2023-10-16
+
+* Fix for setup.py
+
 ### 0.1.1 - 2023-05-26
 
 * Fix applied for logging experiments

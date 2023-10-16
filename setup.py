@@ -28,7 +28,7 @@ setup(
                       'numpy',
                       'torch',
                       'tensorflow',
-                      'sklearn',
+                      'scikit-learn',
                       'captum',
                       'optuna'],
 
