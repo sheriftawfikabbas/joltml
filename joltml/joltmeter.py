@@ -3,13 +3,14 @@ import numpy as np
 
 
 class JoltMeter:
-    def __init__(self, name: str, greater_is_better: bool, function):
+    def __init__(self, name: str, greater_is_better: bool, function, **kwargs):
         self.name = name
         self.greater_is_better = greater_is_better
         self.function = function
+        self.kwargs = kwargs
 
     def evaluate(self, y_true, y_pred):
-        return self.function(y_true, y_pred)
+        return self.function(y_true, y_pred, **self.kwargs)
 
 
 def root_mean_squared_error(y, y_pred):
@@ -36,3 +37,9 @@ class ClassificationMetrics:
                          function=f1_score)
     auc = JoltMeter(name="auc", greater_is_better=True,
                     function=roc_auc_score)
+    precision= JoltMeter(name="precision", greater_is_better=True,
+                    function=precision_score)
+
+class ClassificationMulticlassMetrics:
+    precision= JoltMeter(name="precision", greater_is_better=True,
+                    function=precision_score, average='macro')

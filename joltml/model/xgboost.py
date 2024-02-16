@@ -47,7 +47,7 @@ class Xgboost(Model):
                     parameter[key] = trial.suggest_categorical(
                         key, value['values'])
                 self.native_model.set_params(**parameter)
-            self.fit(X, y, eval_set=[(X_test, y_test)])
+            self.fit(X, y, X_test, y_test)
             return score.evaluate(self.native_model.predict(X_test), y_test)
         if score.greater_is_better:
             study = optuna.create_study(direction="maximize")

@@ -49,6 +49,11 @@ class Model(ABC):
         return X
     
     def evaluate_metrics(self, metrics, X_test, y_test):
+        #The supported metrics are:
+        #- regression
+        #- classification with 2 classes
+        #- classification with >2 classes
+        
         values = {}
         if y_test is not None and X_test is not None:
             for metric in metrics:

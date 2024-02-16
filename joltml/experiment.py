@@ -31,7 +31,6 @@ class Experiment:
         else:
             self.models = models
             
-        print('Models:', self.models)
         self.utc_creation_time = str(utc_creation_time or datetime.utcnow())
         self.utc_last_update_time = utc_last_update_time
 

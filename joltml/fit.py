@@ -10,15 +10,23 @@ import pandas as pd
 
 
 class Fit:
-    def __init__(self, experiment_id, dataset, splits=0.2,
-                 inputs: List[str] = None, target_names: Union[List[str], str] = None, targets: Union[ArrayLike, pd.DataFrame] = None, normalizer=None,
-                 path='./jolt_lab/',
-                 fit_id=None,
-                 utc_creation_time=None,
-                 utc_last_update_time=None,
-                 scaler=None) -> None:
+    def __init__(
+        self,
+        experiment_id,
+        dataset,
+        splits=0.2,
+        inputs: List[str] = None,
+        target_names: Union[List[str], str] = None,
+        targets: Union[ArrayLike, pd.DataFrame] = None,
+        normalizer=None,
+        path="./jolt_lab/",
+        fit_id=None,
+        utc_creation_time=None,
+        utc_last_update_time=None,
+        scaler=None,
+    ) -> None:
         if fit_id is None:
-            self.fit_id = str(uuid.uuid4())
+            self.fit_id = "fit_" + str(uuid.uuid4())
         else:
             self.fit_id = fit_id
 
@@ -45,32 +53,44 @@ class Fit:
                 self.splits = splits
             else:
                 raise Exception(
-                    "The 'splits' parameter should either be a list of 2-3 elements, or just a number.")
+                    "The 'splits' parameter should either be a list of 2-3 elements, or just a number."
+                )
             self._split_datasets()
 
         if scaler:
             self._set_scaler(scaler)
 
         self.fits_book = {
-            'experiment_id': self.experiment_id,
-            'fit_id': self.fit_id,
-            'utc_creation_time': self.utc_creation_time,
-            'utc_last_update_time': self.utc_last_update_time,
-            'joltmeter': {}
+            "experiment_id": self.experiment_id,
+            "fit_id": self.fit_id,
+            "utc_creation_time": self.utc_creation_time,
+            "utc_last_update_time": self.utc_last_update_time,
+            "joltmeter": {},
         }
 
-        os.mkdir(self.path + '/jolt_lab/' +
-                 self.experiment_id + '/' + self.fit_id)
-        os.mkdir(self.path + '/jolt_lab/' + self.experiment_id +
-                 '/' + self.fit_id + '/models')
+        os.mkdir(self.path + "/jolt_lab/" + self.experiment_id + "/" + self.fit_id)
+        os.mkdir(
+            self.path
+            + "/jolt_lab/"
+            + self.experiment_id
+            + "/"
+            + self.fit_id
+            + "/models"
+        )
 
         self._write_fits_book()
 
-    def _split_datasets(self):
+    def _split_datasets(self, random_state=None):
         self.X_train, self.X_test, self.y_train, self.y_test = train_test_split(
-            self.X, self.y, test_size=self.splits, random_state=42)
+            self.X, self.y, test_size=self.splits, random_state=random_state
+        )
 
-    def _set_axes(self, inputs: List[str] = None, target_names: Union[List[str], str] = None, targets: Union[ArrayLike, pd.DataFrame] = None):
+    def _set_axes(
+        self,
+        inputs: List[str] = None,
+        target_names: Union[List[str], str] = None,
+        targets: Union[ArrayLike, pd.DataFrame] = None,
+    ):
         """
         Parameters
         ----------
@@ -81,26 +101,29 @@ class Fit:
         """
         if target_names is not None and targets is not None:
             raise Exception(
-                'Either targets or target_names should be specified, not both.')
+                "Either targets or target_names should be specified, not both."
+            )
         if target_names is not None:
             if isinstance(target_names, list):
                 if len(target_names) == 1:
                     target_names = target_names[0]
                 else:
-                    raise Exception(
-                        'Currently supports only one target column.')
+                    raise Exception("Currently supports only one target column.")
 
             if isinstance(target_names, str) and target_names in self.dataset.columns:
                 self.y = self.dataset[target_names]
-            elif isinstance(target_names, str) and target_names not in self.dataset.columns:
-                raise Exception('No column named '+target_names+' in the dataset.')
+            elif (
+                isinstance(target_names, str)
+                and target_names not in self.dataset.columns
+            ):
+                raise Exception("No column named " + target_names + " in the dataset.")
 
         elif isinstance(targets, pd.DataFrame):
             self.y = targets.iloc[:, 0]
         elif isinstance(targets, list):
             self.y = targets
         else:
-            raise Exception('Target column type not recognized.')
+            raise Exception("Target column type not recognized.")
 
         if inputs is None:
             if target_names is not None:
@@ -117,55 +140,85 @@ class Fit:
     def regression(self, model, metrics=None):
         model.regression_on()
         if metrics is None:
-            self.metrics = [RegressionMetrics.mean_absolute_error,
-                            RegressionMetrics.r2_score, RegressionMetrics.mean_squared_error]
+            self.metrics = [
+                RegressionMetrics.mean_absolute_error,
+                RegressionMetrics.r2_score,
+                RegressionMetrics.mean_squared_error,
+            ]
         else:
             self.metrics = metrics
         model.fit(self.X_train, self.y_train, self.X_test, self.y_test)
-        model.plot_history(self.path + '/jolt_lab/' +
-                           self.experiment_id + '/' + self.fit_id)
+        model.plot_history(
+            self.path + "/jolt_lab/" + self.experiment_id + "/" + self.fit_id
+        )
 
-    def regression_optimize(self, model, metrics=None, params=None, n_trials=10, score=None):
+    def regression_optimize(
+        self, model, metrics=None, params=None, n_trials=10, score=None
+    ):
         model.regression_on()
         if metrics is None:
-            self.metrics = [RegressionMetrics.mean_absolute_error,
-                            RegressionMetrics.r2_score, RegressionMetrics.mean_squared_error]
+            self.metrics = [
+                RegressionMetrics.mean_absolute_error,
+                RegressionMetrics.r2_score,
+                RegressionMetrics.mean_squared_error,
+            ]
         else:
             self.metrics = metrics
-        model.fit_optimize(self.X_train, self.y_train,
-                           self.X_test, self.y_test, params, n_trials, score)
+        model.fit_optimize(
+            self.X_train,
+            self.y_train,
+            self.X_test,
+            self.y_test,
+            params,
+            n_trials,
+            score,
+        )
 
     def classification(self, model, metrics=None):
         model.classification_on()
         if metrics is None:
             self.metrics = [
-                            # ClassificationMetrics.f1_score,
-                            ClassificationMetrics.auc
-                            ]
+                # ClassificationMetrics.f1_score,
+                ClassificationMetrics.precision
+            ]
         else:
             self.metrics = metrics
         model.fit(self.X_train, self.y_train, self.X_test, self.y_test)
-        model.plot_history(self.path + '/jolt_lab/' +
-                           self.experiment_id + '/' + self.fit_id)
+        model.plot_history(
+            self.path + "/jolt_lab/" + self.experiment_id + "/" + self.fit_id
+        )
 
     def set_dataset(self, dataset):
         self.dataset = dataset
 
     def _write_fits_book(self):
-        self.fits_book['utc_last_update_time'] = str(datetime.utcnow())
-        fits_book_f = open(self.path + '/jolt_lab/' +
-                           self.experiment_id + '/' + self.fit_id + '/fits_book.json', 'w')
+        self.fits_book["utc_last_update_time"] = str(datetime.utcnow())
+        fits_book_f = open(
+            self.path
+            + "/jolt_lab/"
+            + self.experiment_id
+            + "/"
+            + self.fit_id
+            + "/fits_book.json",
+            "w",
+        )
         json.dump(self.fits_book, fits_book_f)
         fits_book_f.close()
 
     def save_model(self, model):
-        model.save_model(path=self.path + '/jolt_lab/' + self.experiment_id +
-                         '/'+self.fit_id + '/models/' + model.model_id)
+        model.save_model(
+            path=self.path
+            + "/jolt_lab/"
+            + self.experiment_id
+            + "/"
+            + self.fit_id
+            + "/models/"
+            + model.model_id
+        )
 
     def save_metrics(self, model):
-        metrics = model.evaluate_metrics(
-            self.metrics, self.X_test, self.y_test)
-        self.fits_book['joltmeter'][model.model_id] = metrics
+        metrics = model.evaluate_metrics(self.metrics, self.X_test, self.y_test)
+        self.fits_book["joltmeter"][model.model_id] = metrics
         self._write_fits_book()
 
     def _set_scaler(self, scaler_class):
